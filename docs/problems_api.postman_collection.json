@@ -1,0 +1,279 @@
+{
+	"info": {
+		"_postman_id": "07d7d421-8d28-49a5-9818-affa36fee8cd",
+		"name": "problems_api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "get problems",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{user_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems?page=2&perPage=2",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "2"
+						},
+						{
+							"key": "perPage",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problems with m2m",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{m2m_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problems 400",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{user_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems?page=invalid",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "invalid"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problems 401",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer invalid"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problems 403",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{m2m_invalid_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problem by id",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{user_token}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems/15557",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems",
+						"15557"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problem by id m2m",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{m2m_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems/15557",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems",
+						"15557"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problem by id 400",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{user_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems/invalid",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems",
+						"invalid"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problem by id 401",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{URL}}/problems/15557",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems",
+						"15557"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problem by id 403",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{m2m_invalid_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems/15557",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems",
+						"15557"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get problem by id 404",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{user_token}}"
+					}
+				],
+				"url": {
+					"raw": "{{URL}}/problems/123",
+					"host": [
+						"{{URL}}"
+					],
+					"path": [
+						"problems",
+						"123"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

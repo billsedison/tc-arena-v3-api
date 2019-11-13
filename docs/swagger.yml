@@ -1,0 +1,334 @@
+swagger: '2.0'
+info:
+  description: |
+    REST API for SRM Problems.
+    ### Pagination
+      Requests that return multiple items will be paginated to 20 items by default. You can specify
+      further pages with the `page` parameter. You can also set a custom page
+      size up to 100 with the `perPage` parameter.
+      Pagination response data is included in http headers. By Default, the response header contains links with `next`, `last`, `first`, `prev` resource links.
+  version: '5.0.0'
+  title: 'Topcoder SRM Problem REST API'
+  termsOfService: 'http://topcoder.com/terms/'
+
+  contact:
+    url: 'http://www.topcoder.com/support'
+    email: support@topcoder.com
+
+host: api.topcoder.com
+basePath: /v5
+schemes:
+  - https
+  - http
+produces:
+  - application/json
+consumes:
+  - application/json
+tags:
+  - name: 'SRM Problems'
+    description: Everything about SRM Problems.
+
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    in: header
+    name: Authorization
+
+security:
+  - Bearer: []
+
+paths:
+  /problems:
+    get:
+      summary: Get all SRM Problems
+      description: |
+        Get all SRM Problems. Link headers are sent back and they have rel set to prev, next, first, last and contain the relevant URL.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+      tags:
+        - SRM Problems
+      operationId: getProblems
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/perPage'
+      responses:
+        200:
+          description: OK - the request was successful, the SRM problems are returned.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProblemSummary'
+            example:
+              - problemId: 12345
+                name: Jane's Marbles
+                statusId: 166
+                status: Active
+                proposedDivisionId: 2
+                problemTypeId: 255
+                problemType: Heuristic
+                proposedDifficultyId: 1
+                createDate: '2018-06-01T07:36:28.178Z'
+                modifyDate: '2018-06-01T07:36:28.178Z'
+                acceptedSubmissions: 1
+              - problemId: 12346
+                name: Skipping Stones
+                statusId: 166
+                status: Active
+                proposedDivisionId: 1
+                problemTypeId: 129
+                problemType: DP
+                proposedDifficultyId: 5
+                createDate: '2018-06-01T07:36:28.178Z'
+                modifyDate: '2018-06-01T07:36:28.178Z'
+                acceptedSubmissions: 1
+          headers:
+            X-Next-Page:
+              type: integer
+              description: The index of the next page
+            X-Page:
+              type: integer
+              description: The index of the current page (starting at 1)
+            X-Per-Page:
+              type: integer
+              description: The number of items to list per page
+            X-Prev-Page:
+              type: integer
+              description: The index of the previous page
+            X-Total:
+              type: integer
+              description: The total number of items
+            X-Total-Pages:
+              type: integer
+              description: The total number of pages
+            Link:
+              type: string
+              description: Pagination link header.
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: ServerError
+          schema:
+            $ref: '#/definitions/ServerError'
+  /problems/{problemId}:
+    get:
+      summary: Get the problem details for the specified id.
+      description: |
+        Get the problem details for the specified id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+      tags:
+        - SRM Problem
+      operationId: getProblem
+      parameters:
+        - $ref: '#/parameters/problemIdParam'
+      responses:
+        200:
+          description: OK - the request was successful and the submission is returned.
+          schema:
+            $ref: '#/definitions/Problem'
+        400:
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not Found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: ServerError
+          schema:
+            $ref: '#/definitions/ServerError'
+parameters:
+  page:
+    name: page
+    in: query
+    description: The page number.
+    required: false
+    type: integer
+    default: 1
+  perPage:
+    name: perPage
+    in: query
+    description: The number of items to list per page.
+    required: false
+    type: integer
+    default: 20
+    maximum: 100
+  problemIdParam:
+    name: problemId
+    in: path
+    description: problem id
+    required: true
+    type: integer
+
+definitions:
+  ProblemSummary:
+    description: An SRM Problem.
+    type: object
+    properties:
+      problemId:
+        type: integer
+        description: The unique ID of the problem
+        example: 12345
+      name:
+        type: string
+        description: The name of the problem.
+        example: Jane's Marbles
+      statusId:
+        type: number
+        description: The status id of the problem.
+        example: 166
+      status:
+        type: string
+        description: The status of the problem.
+        example: Archived
+      proposedDivisionId:
+        type: integer
+        enum: [1, 2]
+        description: The proposed Division ID (Division 1 or 2)
+        example: 1
+      problemTypeId:
+        type: number
+        description: The problem type id.
+        example: 255
+      problemType:
+        type: string
+        description: The problem type
+        example: Brute force
+      proposedDifficultyId:
+        type: number
+        description: The proposed difficulty id (Difficulty level, decimal)
+        example: 7
+      createDate:
+        type: string
+        format: date-time
+        description: The creation date of this problem.
+        example: '2018-06-01T07:36:28.178Z'
+      modifyDate:
+        type: string
+        format: date-time
+        description: The last modify date of this problem.
+        example: '2018-06-01T07:36:28.178Z'
+      acceptedSubmissions:
+        type: number
+        description: The number of accepted submissions.
+        example: 77
+  Component:
+    description: The details of an SRM Problem, like problem description, function signature, etc.
+    type: object
+    properties:
+      componentId:
+        type: integer
+        description: The unique ID of the component
+        example: 99999
+      problemId:
+        type: integer
+        description: The problem associated with the component.
+        example: 12345
+      methodName:
+        type: string
+        description: The required method name.
+        example: getMarbles(int marbleCount, int colors)
+      className:
+        type: string
+        description: The required class name.
+        example: MarbleSolver
+      defaultSolution:
+        type: string
+        description: The text of the default solution
+        example: return marbleCount * colors;
+      componentTypeId:
+        type: number
+        description: The id of the component type.
+        example: 32
+      componentType:
+        type: string
+        description: The component type description.
+        example: Default
+      componentText:
+        type: string
+        description: The problems statement.
+        example: >
+          Jane Snow likes to play with different colored marbles.  She has a certain amount of marbles of each
+          color.  Figure out how many marbles Jane Snow owns.
+      statusId:
+        type: number
+        description: The statusId of the component.
+        example: 42
+      modifyDate:
+        type: string
+        format: date-time
+        description: The last modify date of this problem.
+        example: '2018-06-01T07:36:28.178Z'
+  Problem:
+    description: A complete SRM problem with details included.
+    type: object
+    allOf:
+      - $ref: "#/definitions/ProblemSummary"
+      - type: object
+        properties:
+          component:
+            $ref: "#/definitions/Component"
+
+  # Schema for error body
+  Unauthorized:
+    type: object
+    description: The unauthorized error entity.
+    properties:
+      message:
+        type: string
+        description: The unauthorized error message.
+        example: Unable to authenticate the user.
+
+  NotFound:
+    type: object
+    description: The not found error entity.
+    properties:
+      message:
+        type: string
+        description: The not found error message.
+        example: A resource with the name could not be found.
+
+  ServerError:
+    type: object
+    description: The server error entity.
+    properties:
+      message:
+        type: string
+        description: The server error message.
+        example: Something went wrong while processing your request. We’re sorry for the trouble. We’ve been notified of the error and will correct it as soon as possible. Please try your request again in a moment.
+
+  BadRequest:
+    type: object
+    description: The bad request error entity.
+    properties:
+      message:
+        type: string
+        description: The bad request error message.
+        example: Invalid input.
+
+  Forbidden:
+    type: object
+    description: The permission error entity.
+    properties:
+      message:
+        type: string
+        description: The forbidden error message.
+        example: You are not allowed to access the request.
+
