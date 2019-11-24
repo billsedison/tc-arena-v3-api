@@ -1,0 +1,17 @@
+
+{
+    "data":[
+        {
+            "problem_type_id":1,
+            "problem_type_desc":"Single"
+        },
+        {
+            "problem_type_id":2,
+            "problem_type_desc":"Team"
+        },
+        {
+            "problem_type_id":3,
+            "problem_type_desc":"Long"
+        }
+    ]
+}
