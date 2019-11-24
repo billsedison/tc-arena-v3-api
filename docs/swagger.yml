@@ -373,7 +373,7 @@ paths:
             items:
               $ref: '#/definitions/Component'
             example:
-              - componentId: a84a4180-65aa-42ec-a945-5fd21dec1567
+              - componentId: 91461
                 componentTypeId: 188
                 componentType: Draft
                 modifyDate: '2018-06-01T07:36:28.178Z'
@@ -385,7 +385,7 @@ paths:
                   Jane Snow likes to play with different colored marbles. She has a certain amount of marbles of each
                   color. Figure out how many marbles Jane Snow owns.
                 statusId: 42
-              - componentId: b8372d98-65aa-42ec-a945-5fd21abc1588
+              - componentId: 91462
                 componentTypeId: 170
                 componentType: Active
                 modifyDate: '2018-06-01T07:39:30.009Z'
@@ -1430,9 +1430,9 @@ definitions:
       - type: object
         properties:
           problemId:
-            type: string
+            type: number
             description: The unique ID of the problem
-            example: a84a4180-65aa-42ec-a945-5fd21dec1567
+            example: 12345
           status:
             type: string
             description: The status of the problem.
@@ -1464,15 +1464,15 @@ definitions:
         description: The status id of the problem.  It must be a valid existing problem status id.
         example: 166
       proposedDivisionId:
-        type: string
-        enum: [Div1, Div2]
+        type: number
+        enum: [1, 2]
         description: The proposed Division ID (Division 1 or 2)
-        example: Div1
+        example: 1
       problemTypeId:
         type: number
         description: The problem type id. It must be a valid existing problem type id.
         example: 255
-      proposedDifficulty:
+      proposedDifficultyId:
         type: number
         description: The proposed difficulty (Difficulty level, decimal)
         example: 7
@@ -1501,9 +1501,9 @@ definitions:
       - type: object
         properties:
           componentId:
-            type: string
+            type: number
             description: The unique ID of the component
-            example: a84a4180-65aa-42ec-a945-5fd21dec1565
+            example: 91461
           componentType:
             type: string
             description: The component type description.
