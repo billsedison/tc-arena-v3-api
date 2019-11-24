@@ -3,6 +3,7 @@ info:
   description: |
     REST API for SRM Problems.
     ### Pagination
+
       Requests that return multiple items will be paginated to 20 items by default. You can specify
       further pages with the `page` parameter. You can also set a custom page
       size up to 100 with the `perPage` parameter.
@@ -15,8 +16,6 @@ info:
     url: 'http://www.topcoder.com/support'
     email: support@topcoder.com
 
-host: api.topcoder.com
-basePath: /v5
 schemes:
   - https
   - http
@@ -25,9 +24,10 @@ produces:
 consumes:
   - application/json
 tags:
-  - name: 'SRM Problems'
+  - name: 'SRM Problem'
     description: Everything about SRM Problems.
-
+  - name: 'SRM Component'
+    description: Everything about SRM Components.
 securityDefinitions:
   Bearer:
     type: apiKey
@@ -44,8 +44,14 @@ paths:
       description: |
         Get all SRM Problems. Link headers are sent back and they have rel set to prev, next, first, last and contain the relevant URL.
         **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
       tags:
-        - SRM Problems
+        - SRM Problem
       operationId: getProblems
       parameters:
         - $ref: '#/parameters/page'
@@ -62,13 +68,13 @@ paths:
                 name: Jane's Marbles
                 statusId: 166
                 status: Active
-                proposedDivisionId: 2
+                proposedDivisionId: Div2
                 problemTypeId: 255
                 problemType: Heuristic
                 proposedDifficultyId: 1
                 createDate: '2018-06-01T07:36:28.178Z'
                 modifyDate: '2018-06-01T07:36:28.178Z'
-                acceptedSubmissions: 1
+                acceptedSubmissions: 495
               - problemId: 12346
                 name: Skipping Stones
                 statusId: 166
@@ -76,10 +82,10 @@ paths:
                 proposedDivisionId: 1
                 problemTypeId: 129
                 problemType: DP
-                proposedDifficultyId: 5
+                proposedDifficulty: 5
                 createDate: '2018-06-01T07:36:28.178Z'
                 modifyDate: '2018-06-01T07:36:28.178Z'
-                acceptedSubmissions: 1
+                acceptedSubmissions: 197
           headers:
             X-Next-Page:
               type: integer
@@ -103,19 +109,63 @@ paths:
               type: string
               description: Pagination link header.
         400:
-          description: Bad Request
+          description: Bad request
           schema:
             $ref: '#/definitions/BadRequest'
         401:
-          description: Unauthorized
+          description: Unauthorized operation
           schema:
             $ref: '#/definitions/Unauthorized'
         403:
-          description: Forbidden
+          description: Not allowed to access the request
           schema:
             $ref: '#/definitions/Forbidden'
         500:
-          description: ServerError
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    post:
+      summary: Create a new SRM problem.
+      description: |
+        Create a new SRM problem.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - SRM Problem
+      operationId: createProblem
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProblemSummaryData'
+      responses:
+        201:
+          description: Created - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/ProblemSummary'
+          headers:
+            Location:
+              type: string
+              description: The Location response header indicates the URL to redirect a page to or created resource. It only provides a meaning when served with a 3xx (redirection) or 201 (created) status response.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: Server error
           schema:
             $ref: '#/definitions/ServerError'
   /problems/{problemId}:
@@ -124,6 +174,12 @@ paths:
       description: |
         Get the problem details for the specified id.
         **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
       tags:
         - SRM Problem
       operationId: getProblem
@@ -131,29 +187,1206 @@ paths:
         - $ref: '#/parameters/problemIdParam'
       responses:
         200:
-          description: OK - the request was successful and the submission is returned.
+          description: OK - the request was successful and the problem is returned.
           schema:
             $ref: '#/definitions/Problem'
         400:
-          description: Bad Request
+          description: Bad request
           schema:
             $ref: '#/definitions/BadRequest'
         401:
-          description: Unauthorized
+          description: Unauthorized operation
           schema:
             $ref: '#/definitions/Unauthorized'
         403:
-          description: Forbidden
+          description: Not allowed to access the request
           schema:
             $ref: '#/definitions/Forbidden'
         404:
-          description: Not Found
+          description: Not found
           schema:
             $ref: '#/definitions/NotFound'
         500:
-          description: ServerError
+          description: Server error
           schema:
             $ref: '#/definitions/ServerError'
+    put:
+      summary: Update the problem details for the specified id.
+      description: |
+        Update the problem details for the specified id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - SRM Problem
+      operationId: updateProblem
+      parameters:
+        - $ref: '#/parameters/problemIdParam'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProblemSummaryData'
+      responses:
+        200:
+          description: Updated - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/ProblemSummary'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Conflict'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    patch:
+      summary: Update the problem details for the specified id.  Only the provided fields are updated.
+      description: |
+        Update the problem details for the specified id.  Only the provided fields are updated.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - SRM Problem
+      operationId: updatePartialsProblem
+      parameters:
+        - $ref: '#/parameters/problemIdParam'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/PartialProblemSummary'
+      responses:
+        200:
+          description: Updated - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/ProblemSummary'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Conflict'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    delete:
+      summary: Delete the problem details for the specified id.
+      description: |
+        Delete the problem details for the specified id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - delete:srm_problem
+             - all:srm_problem
+      tags:
+        - SRM Problem
+      operationId: deleteProblem
+      parameters:
+        - $ref: '#/parameters/problemIdParam'
+      responses:
+        204:
+          description: Deleted - The request was successful and the resource is deleted.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+
+  /components:
+    get:
+      summary: Retrieve an SRM component
+      description: |
+        Retrieve a new SRM component.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
+      tags:
+        - SRM Component
+      operationId: getComponents
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/perPage'
+      responses:
+        200:
+          description: OK - the request was successful, the SRM components are returned.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Component'
+            example:
+              - componentId: a84a4180-65aa-42ec-a945-5fd21dec1567
+                componentTypeId: 188
+                componentType: Draft
+                modifyDate: '2018-06-01T07:36:28.178Z'
+                problemId: b75a4180-25aa-12ed-a945-9ad21nov7728
+                methodName: getMarbles(int marbleCount, int colors)
+                className: MarbleSolver
+                defaultSolution: return marbleCount * colors;
+                componentText: |
+                  Jane Snow likes to play with different colored marbles. She has a certain amount of marbles of each
+                  color. Figure out how many marbles Jane Snow owns.
+                statusId: 42
+              - componentId: b8372d98-65aa-42ec-a945-5fd21abc1588
+                componentTypeId: 170
+                componentType: Active
+                modifyDate: '2018-06-01T07:39:30.009Z'
+                problemId: g75a4180-25aa-12ed-a945-9ad21fev8928
+                methodName: getFlags(int pieces, String[] countries)
+                className: FlagFinder
+                defaultSolution: return 25;
+                componentText: |
+                  Given an array of countries... write a method to determine the flags.
+                statusId: 39
+          headers:
+            X-Next-Page:
+              type: integer
+              description: The index of the next page
+            X-Page:
+              type: integer
+              description: The index of the current page (starting at 1)
+            X-Per-Page:
+              type: integer
+              description: The number of items to list per page
+            X-Prev-Page:
+              type: integer
+              description: The index of the previous page
+            X-Total:
+              type: integer
+              description: The total number of items
+            X-Total-Pages:
+              type: integer
+              description: The total number of pages
+            Link:
+              type: string
+              description: Pagination link header.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    post:
+      summary: Create a new SRM component.
+      description: |
+        Create a new SRM component.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - SRM Component
+      operationId: createComponent
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ComponentData'
+      responses:
+        201:
+          description: Created - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/Component'
+          headers:
+            Location:
+              type: string
+              description: The Location response header indicates the URL to redirect a page to or created resource. It only provides a meaning when served with a 3xx (redirection) or 201 (created) status response.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+
+  /components/{componentId}:
+    get:
+      summary: Get the component with the specified id.
+      description: |
+        Get the component with the specified id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
+      tags:
+        - SRM Component
+      operationId: getComponent
+      parameters:
+        - $ref: '#/parameters/componentIdParam'
+      responses:
+        200:
+          description: OK - the request was successful and the component is returned.
+          schema:
+            $ref: '#/definitions/Component'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    put:
+      summary: Update the component details for the specified id.
+      description: |
+        Update the component details for the specified id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - SRM Component
+      operationId: updateComponent
+      parameters:
+        - $ref: '#/parameters/componentIdParam'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/ComponentData'
+      responses:
+        200:
+          description: Updated - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/Component'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Conflict'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    patch:
+      summary: Update the component details for the specified id.  Only the provided fields are updated.
+      description: |
+        Update the component details for the specified id.  Only the provided fields are updated.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - SRM Component
+      operationId: updatePartialsComponent
+      parameters:
+        - $ref: '#/parameters/componentIdParam'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/PartialComponent'
+      responses:
+        200:
+          description: Updated - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/Component'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Conflict'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    delete:
+      summary: Delete the component for the specified id.
+      description: |
+        Delete the component for the specified id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - delete:srm_problem
+             - all:srm_problem
+      tags:
+        - SRM Component
+      operationId: deleteComponent
+      parameters:
+        - $ref: '#/parameters/componentIdParam'
+      responses:
+        204:
+          description: Deleted - The request was successful and the resource is deleted.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+
+  /problemStatus:
+    get:
+      summary: Get all Problem Status lookup values
+      description: |
+        Get all Problem Status lookup values. Link headers are sent back and they have rel set to prev, next, first, last and contain the relevant URL.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
+      tags:
+        - Lookup
+      operationId: getProblemsStatuses
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/perPage'
+      responses:
+        200:
+          description: OK - the request was successful, the SRM problems are returned.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProblemStatus'
+            example:
+              - problemStatusId: a84a4180-65aa-42ec-a945-5fd21dec1567
+                description: Draft
+              - problemStatusId: b75a4180-25aa-12ed-a945-9ad21nov7728
+                description: Active
+          headers:
+            X-Next-Page:
+              type: integer
+              description: The index of the next page
+            X-Page:
+              type: integer
+              description: The index of the current page (starting at 1)
+            X-Per-Page:
+              type: integer
+              description: The number of items to list per page
+            X-Prev-Page:
+              type: integer
+              description: The index of the previous page
+            X-Total:
+              type: integer
+              description: The total number of items
+            X-Total-Pages:
+              type: integer
+              description: The total number of pages
+            Link:
+              type: string
+              description: Pagination link header.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    post:
+      summary: Create a new Problem Status value.
+      description: |
+        Create a new Problem Status lookup value.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - Lookup
+      operationId: createProblemStatus
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/LookupDescription'
+      responses:
+        201:
+          description: Created - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/ProblemStatus'
+          headers:
+            Location:
+              type: string
+              description: The Location response header indicates the URL to redirect a page to or created resource. It only provides a meaning when served with a 3xx (redirection) or 201 (created) status response.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+
+  /problemStatus/{lookupId}:
+    get:
+      summary: Get the problem status for the given lookup id.
+      description: |
+        Get the problem status for the given lookup id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
+      tags:
+        - Lookup
+      operationId: getProblemStatus
+      parameters:
+        - $ref: '#/parameters/lookupIdParam'
+      responses:
+        200:
+          description: OK - the request was successful and the problem status is returned.
+          schema:
+            $ref: '#/definitions/ProblemStatus'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    put:
+      summary: Update the problem status for the given lookup id.
+      description: |
+        Update the problem status for the given lookup id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - Lookup
+      operationId: updateProblemStatus
+      parameters:
+        - $ref: '#/parameters/lookupIdParam'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/LookupDescription'
+      responses:
+        200:
+          description: Updated - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/ProblemStatus'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Conflict'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    delete:
+      summary: Delete the problem status with the specified id.
+      description: |
+        Delete the problem status with the specified id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - delete:srm_problem
+             - all:srm_problem
+      tags:
+        - Lookup
+      operationId: deleteProblemStatus
+      parameters:
+        - $ref: '#/parameters/lookupIdParam'
+      responses:
+        204:
+          description: Deleted - The request was successful and the resource is deleted.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+
+  /problemType:
+    get:
+      summary: Get all Problem Type lookup values
+      description: |
+        Get all Problem Type lookup values. Link headers are sent back and they have rel set to prev, next, first, last and contain the relevant URL.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
+      tags:
+        - Lookup
+      operationId: getProblemsTypes
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/perPage'
+      responses:
+        200:
+          description: OK - the request was successful, the SRM problems are returned.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ProblemType'
+            example:
+              - problemTypeId: a84a4180-65aa-42ec-a945-5fd21dec1567
+                description: Draft
+              - problemTypeId: b75a4180-25aa-12ed-a945-9ad21nov7728
+                description: Active
+          headers:
+            X-Next-Page:
+              type: integer
+              description: The index of the next page
+            X-Page:
+              type: integer
+              description: The index of the current page (starting at 1)
+            X-Per-Page:
+              type: integer
+              description: The number of items to list per page
+            X-Prev-Page:
+              type: integer
+              description: The index of the previous page
+            X-Total:
+              type: integer
+              description: The total number of items
+            X-Total-Pages:
+              type: integer
+              description: The total number of pages
+            Link:
+              type: string
+              description: Pagination link header.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    post:
+      summary: Create a new Problem Type value.
+      description: |
+        Create a new Problem Type lookup value.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - Lookup
+      operationId: createProblemType
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/LookupDescription'
+      responses:
+        201:
+          description: Created - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/ProblemType'
+          headers:
+            Location:
+              type: string
+              description: The Location response header indicates the URL to redirect a page to or created resource. It only provides a meaning when served with a 3xx (redirection) or 201 (created) status response.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+
+  /problemType/{lookupId}:
+    get:
+      summary: Get the problem type for the given lookup id.
+      description: |
+        Get the problem type for the given lookup id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
+      tags:
+        - Lookup
+      operationId: getProblemType
+      parameters:
+        - $ref: '#/parameters/lookupIdParam'
+      responses:
+        200:
+          description: OK - the request was successful and the problem type is returned.
+          schema:
+            $ref: '#/definitions/ProblemType'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    put:
+      summary: Update the problem type for the given lookup id.
+      description: |
+        Update the problem type for the given lookup id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - Lookup
+      operationId: updateProblemType
+      parameters:
+        - $ref: '#/parameters/lookupIdParam'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/LookupDescription'
+      responses:
+        200:
+          description: Updated - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/ProblemType'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Conflict'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    delete:
+      summary: Delete the problem type with the specified id.
+      description: |
+        Delete the problem type with the specified id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - delete:srm_problem
+             - all:srm_problem
+      tags:
+        - Lookup
+      operationId: deleteProblemType
+      parameters:
+        - $ref: '#/parameters/lookupIdParam'
+      responses:
+        204:
+          description: Deleted - The request was successful and the resource is deleted.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+
+  /componentType:
+    get:
+      summary: Get all Component Type lookup values
+      description: |
+        Get all Component Type lookup values. Link headers are sent back and they have rel set to prev, next, first, last and contain the relevant URL.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
+      tags:
+        - Lookup
+      operationId: getComponentTypes
+      parameters:
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/perPage'
+      responses:
+        200:
+          description: OK - the request was successful, the SRM problems are returned.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ComponentType'
+            example:
+              - componentTypeId: a84a4180-65aa-42ec-a945-5fd21dec1567
+                description: Draft
+              - componentTypeId: b75a4180-25aa-12ed-a945-9ad21nov7728
+                description: Active
+          headers:
+            X-Next-Page:
+              type: integer
+              description: The index of the next page
+            X-Page:
+              type: integer
+              description: The index of the current page (starting at 1)
+            X-Per-Page:
+              type: integer
+              description: The number of items to list per page
+            X-Prev-Page:
+              type: integer
+              description: The index of the previous page
+            X-Total:
+              type: integer
+              description: The total number of items
+            X-Total-Pages:
+              type: integer
+              description: The total number of pages
+            Link:
+              type: string
+              description: Pagination link header.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    post:
+      summary: Create a new Component Type value.
+      description: |
+        Create a new Component Type lookup value.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - Lookup
+      operationId: createComponentType
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/LookupDescription'
+      responses:
+        201:
+          description: Created - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/ComponentType'
+          headers:
+            Location:
+              type: string
+              description: The Location response header indicates the URL to redirect a page to or created resource. It only provides a meaning when served with a 3xx (redirection) or 201 (created) status response.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+
+  /componentType/{lookupId}:
+    get:
+      summary: Get the Component type for the given lookup id.
+      description: |
+        Get the Component type for the given lookup id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+          All roles can read, and M2M in following scopes can read:
+            - read:challenges
+            - read:groups
+            - read:srm_problem
+            - all:srm_problem
+      tags:
+        - Lookup
+      operationId: getComponentType
+      parameters:
+        - $ref: '#/parameters/lookupIdParam'
+      responses:
+        200:
+          description: OK - the request was successful and the problem type is returned.
+          schema:
+            $ref: '#/definitions/ComponentType'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    put:
+      summary: Update the Component type for the given lookup id.
+      description: |
+        Update the Component type for the given lookup id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin and copilot roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - write:srm_problem
+             - all:srm_problem
+      tags:
+        - Lookup
+      operationId: updateComponentType
+      parameters:
+        - $ref: '#/parameters/lookupIdParam'
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: '#/definitions/LookupDescription'
+      responses:
+        200:
+          description: Updated - The request was successful and the resource is returned.
+          schema:
+            $ref: '#/definitions/ComponentType'
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        409:
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Conflict'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+    delete:
+      summary: Delete the Component type with the specified id.
+      description: |
+        Delete the Component type with the specified id.
+        **Authentication**: A valid JWT / M2M token is required to make this request.
+        **Authorization**:
+           - Only admin roles can manipulate.
+           - M2M in the following scopes can manipulate:
+             - delete:srm_problem
+             - all:srm_problem
+      tags:
+        - Lookup
+      operationId: deleteComponentType
+      parameters:
+        - $ref: '#/parameters/lookupIdParam'
+      responses:
+        204:
+          description: Deleted - The request was successful and the resource is deleted.
+        400:
+          description: Bad request
+          schema:
+            $ref: '#/definitions/BadRequest'
+        401:
+          description: Unauthorized operation
+          schema:
+            $ref: '#/definitions/Unauthorized'
+        403:
+          description: Not allowed to access the request
+          schema:
+            $ref: '#/definitions/Forbidden'
+        404:
+          description: Not found
+          schema:
+            $ref: '#/definitions/NotFound'
+        500:
+          description: Server error
+          schema:
+            $ref: '#/definitions/ServerError'
+
 parameters:
   page:
     name: page
@@ -175,72 +1408,120 @@ parameters:
     in: path
     description: problem id
     required: true
-    type: integer
+    type: string
+  componentIdParam:
+    name: componentId
+    in: path
+    description: component id
+    required: true
+    type: string
+  lookupIdParam:
+    name: lookupId
+    in: path
+    description: lookup id
+    required: true
+    type: string
 
 definitions:
   ProblemSummary:
     description: An SRM Problem.
+    allOf:
+      - $ref: "#/definitions/ProblemSummaryData"
+      - type: object
+        properties:
+          problemId:
+            type: string
+            description: The unique ID of the problem
+            example: a84a4180-65aa-42ec-a945-5fd21dec1567
+          status:
+            type: string
+            description: The status of the problem.
+            example: Archived
+          problemType:
+            type: string
+            description: The problem type
+            example: Brute force
+          createDate:
+            type: string
+            format: date-time
+            description: The creation date of this problem.
+            example: '2018-06-01T07:36:28.178Z'
+          modifyDate:
+            type: string
+            format: date-time
+            description: The last modify date of this problem.
+            example: '2018-06-01T07:36:28.178Z'
+  PartialProblemSummary:
+    description: Partial data for a problem summary, usually provided to update a new SRM problem.
     type: object
     properties:
-      problemId:
-        type: integer
-        description: The unique ID of the problem
-        example: 12345
       name:
         type: string
         description: The name of the problem.
         example: Jane's Marbles
       statusId:
         type: number
-        description: The status id of the problem.
+        description: The status id of the problem.  It must be a valid existing problem status id.
         example: 166
-      status:
-        type: string
-        description: The status of the problem.
-        example: Archived
       proposedDivisionId:
-        type: integer
-        enum: [1, 2]
+        type: string
+        enum: [Div1, Div2]
         description: The proposed Division ID (Division 1 or 2)
-        example: 1
+        example: Div1
       problemTypeId:
         type: number
-        description: The problem type id.
+        description: The problem type id. It must be a valid existing problem type id.
         example: 255
-      problemType:
-        type: string
-        description: The problem type
-        example: Brute force
-      proposedDifficultyId:
+      proposedDifficulty:
         type: number
-        description: The proposed difficulty id (Difficulty level, decimal)
+        description: The proposed difficulty (Difficulty level, decimal)
         example: 7
-      createDate:
-        type: string
-        format: date-time
-        description: The creation date of this problem.
-        example: '2018-06-01T07:36:28.178Z'
-      modifyDate:
-        type: string
-        format: date-time
-        description: The last modify date of this problem.
-        example: '2018-06-01T07:36:28.178Z'
       acceptedSubmissions:
         type: number
         description: The number of accepted submissions.
         example: 77
+  ProblemSummaryData:
+    description: Created data for a problem summary, usually provided to create or update a new SRM problem.
+    required:
+      - name
+      - statusId
+      - proposedDivisionId
+      - problemTypeId
+      - proposedDifficulty
+      - acceptedSubmissions
+    allOf:
+      - $ref: "#/definitions/PartialProblemSummary"
   Component:
+    description: The details of an SRM Problem, like problem description, function signature, etc.
+    required:
+      - componentId
+      - componentType
+      - modifyDate
+    allOf:
+      - type: object
+        properties:
+          componentId:
+            type: string
+            description: The unique ID of the component
+            example: a84a4180-65aa-42ec-a945-5fd21dec1565
+          componentType:
+            type: string
+            description: The component type description.
+            example: Default
+          modifyDate:
+            type: string
+            format: date-time
+            description: The last modify date of this problem.
+            example: '2018-06-01T07:36:28.178Z'
+      - $ref: "#/definitions/ComponentData"
+  PartialComponent:
     description: The details of an SRM Problem, like problem description, function signature, etc.
     type: object
     properties:
-      componentId:
-        type: integer
-        description: The unique ID of the component
-        example: 99999
       problemId:
-        type: integer
-        description: The problem associated with the component.
-        example: 12345
+        type: string
+        description: The id of problem associated with the component.  It must point to an existing SRM problem
+        example: a84a4180-65aa-42ec-a945-5fd21dec1567
       methodName:
         type: string
         description: The required method name.
@@ -255,12 +1536,8 @@ definitions:
         example: return marbleCount * colors;
       componentTypeId:
         type: number
-        description: The id of the component type.
+        description: The id of the component type. It must point to an existing SRM componnent type
         example: 32
-      componentType:
-        type: string
-        description: The component type description.
-        example: Default
       componentText:
         type: string
         description: The problems statement.
@@ -269,22 +1546,72 @@ definitions:
           color.  Figure out how many marbles Jane Snow owns.
       statusId:
         type: number
-        description: The statusId of the component.
+        description: The statusId of the component.  It must point to an existing component status id
         example: 42
-      modifyDate:
-        type: string
-        format: date-time
-        description: The last modify date of this problem.
-        example: '2018-06-01T07:36:28.178Z'
+  ComponentData:
+    description: Data that is related to the creation or updating of a Component.
+    required:
+      - problemId
+      - methodName
+      - className
+      - defaultSolution
+      - componentTypeId
+      - componentText
+      - statusId
+    allOf:
+      - $ref: "#/definitions/PartialComponent"
   Problem:
     description: A complete SRM problem with details included.
-    type: object
     allOf:
       - $ref: "#/definitions/ProblemSummary"
       - type: object
         properties:
           component:
             $ref: "#/definitions/Component"
+  ProblemStatus:
+    description: Object representing the ProblemStatus lookup values
+    type: object
+    properties:
+      problemStatusId:
+        type: string
+        description: The id of the problem status
+        example: a84a4180-65aa-42ec-a945-5fd21apr1567
+      problemStatusDesc:
+        type: string
+        description: The description of the problem status
+        example: Draft
+  ProblemType:
+    description: Object representing the ProblemType lookup values
+    type: object
+    properties:
+      problemTypeId:
+        type: string
+        description: The id of the problem status
+        example: z66a4180-65aa-42ec-a945-5fd21spt2918
+      problemTypeDesc:
+        type: string
+        description: The description of the problem type
+        example: Draft
+  ComponentType:
+    description: Object representing the ComponentType lookup values
+    type: object
+    properties:
+      componentTypeId:
+        type: string
+        description: The id of the component type
+        example: x25a4180-65aa-42ec-a945-5fd21vin2876
+      componentTypeDesc:
+        type: string
+        description: The description of the component type
+        example: Problem Summary
+  LookupDescription:
+    description: A simple string value provided in the request which is used to update a lookup value.
+    type: object
+    properties:
+      description:
+        type: string
+        description: The description of the lookup value.
+        example: Draft
 
   # Schema for error body
   Unauthorized:
@@ -332,3 +1659,13 @@ definitions:
         description: The forbidden error message.
         example: You are not allowed to access the request.
 
+  Conflict:
+    type: object
+    description: The conflict error entity.
+    required:
+      - message
+    properties:
+      message:
+        type: string
+        description: The conflict error message.
+        example: Creating a resource with a name already exists.
