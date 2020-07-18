@@ -30,7 +30,7 @@
     "express": "^4.17.1",
     "get-parameter-names": "^0.3.0",
     "http-status-codes": "^1.4.0",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "pg": "^7.12.1",
     "pg-hstore": "^2.3.3",
     "pg-native": "^3.0.0",
